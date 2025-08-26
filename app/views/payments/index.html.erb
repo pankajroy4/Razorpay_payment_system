@@ -1,0 +1,33 @@
+<!-- app/views/payments/index.html.erb -->
+<h1 class="page-title">💳 Recent Payments</h1>
+
+<div class="table-container">
+  <table class="payments-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Gateway</th>
+        <th>Amount (INR)</th>
+        <th>Status</th>
+        <th>Order ID</th>
+        <th>Payment ID</th>
+        <th>Created At</th>
+        <th>View</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @payments.each do |p| %>
+        <tr>
+          <td><%= p.id %></td>
+          <td><%= p.gateway %></td>
+          <td><%= number_to_currency(p.inr, unit: "₹") %></td>
+          <td class="status <%= p.status.downcase %>"><%= p.status %></td>
+          <td class="mono"><%= p.razorpay_order_id %></td>
+          <td class="mono"><%= p.razorpay_payment_id %></td>
+          <td><%= p.created_at.strftime("%Y-%m-%d %H:%M") %></td>
+          <td><%= link_to "Show", payment_path(p), class: "btn-link" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

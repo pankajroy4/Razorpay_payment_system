@@ -1,0 +1,74 @@
+<!-- app/views/payments/new.html.erb -->
+<h1 class="page-title">💳 Pay with Razorpay</h1>
+
+<div class="form-card">
+  <label for="amount" class="form-label">Amount (INR)</label>
+  <input type="number" id="amount" class="form-input" placeholder="e.g. 99" min="1" step="1" />
+
+  <button id="pay-btn" class="btn-primary">🚀 Pay Now</button>
+
+  <p class="tip-text">
+    💡 Tip: Open your Rails server to the internet (e.g., via 
+    <code>ngrok http 3000</code>) and set that public URL in 
+    <span class="highlight">Razorpay Dashboard → Webhooks</span> 
+    so the webhook can reach your dev machine.
+  </p>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  async function postJSON(url, body) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken
+      },
+      body: JSON.stringify(body || {})
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || `Request failed (${res.status})`)
+    }
+    return res.json()
+  }
+
+  document.getElementById("pay-btn").onclick = async function () {
+    const amount = parseFloat(document.getElementById("amount").value || "0")
+    if (amount <= 0) { alert("Please enter a valid amount > 0"); return }
+
+    try {
+      // 1) Create order in backend + DB record (status=created)
+      const data = await postJSON("/payments", { amount: amount })
+
+      // 2) Open Razorpay checkout
+      const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: data.currency,
+        order_id: data.order_id,
+        name: "Payment Demo",
+        description: "Razorpay integration demo",
+        handler: function (response) {
+          window.location.href = "/payments/" + data.payment_id
+          //We hace just redirect. For all the updates we have used Webhooks
+        },
+        modal: {
+          ondismiss: function () {
+            postJSON("/payments/" + data.payment_id + "/abandon", {})
+          }
+        }
+      }
+
+      const rzp = new Razorpay(options)
+      rzp.on("payment.failed", function () {
+        window.location.href = "/payments/" + data.payment_id
+      })
+      rzp.open()
+    } catch (e) {
+      alert(e.message)
+    }
+  }
+</script>
+

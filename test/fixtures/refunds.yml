@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  payment: one
+  amount: 1
+  status: MyString
+  razorpay_refund_id: MyString
+  raw_event: 
+
+two:
+  payment: two
+  amount: 1
+  status: MyString
+  razorpay_refund_id: MyString
+  raw_event: 

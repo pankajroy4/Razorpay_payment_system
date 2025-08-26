@@ -1,0 +1,42 @@
+<h1 class="page-title">💳 Payment #<%= @payment.id %></h1>
+
+<div class="detail-card">
+  <p><span class="label">Gateway:</span> <%= @payment.gateway %></p>
+  <p><span class="label">Amount:</span> <span class="amount">₹ <%= @payment.inr %></span></p>
+  <p>
+    <span class="label">Status:</span> 
+    <span class="status <%= @payment.status.downcase %>"><%= @payment.status %></span>
+  </p>
+  <p>
+    <span class="label">Razorpay Order ID:</span> 
+    <code><%= @payment.razorpay_order_id %></code>
+  </p>
+  <p>
+    <span class="label">Razorpay Payment ID:</span> 
+    <code><%= @payment.razorpay_payment_id || "-" %></code>
+  </p>
+</div>
+
+<div class="refunds-section">
+  <h2>Refunds</h2>
+  <ul id="refunds-list">
+    <% if @payment.refunds.any? %>
+      <% @payment.refunds.order(created_at: :desc).each do |refund| %>
+        <li>
+          <span>Refund #<%= refund.id %></span>
+          <span>₹ <%= refund.amount / 100.0 %></span>
+          <span class="<%= refund.status.downcase %>"><%= refund.status %></span>
+        </li>
+      <% end %>
+    <% else %>
+      <li>No refunds yet</li>
+    <% end %>
+  </ul>
+</div>
+
+<div class="actions">
+  <%= link_to "⬅ Back to Payments", payments_path, class: "btn-link" %>
+  <% if @payment.status == "success" %>
+    <%= button_to "💸 Request Refund", payment_refunds_path(@payment), method: :post, form: { data: { turbo: true } }, class: "btn-refund" %>
+  <% end %>
+</div>
